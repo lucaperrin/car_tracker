@@ -11,8 +11,8 @@
 1. Open a terminal and run:
 
    ```bash
-   git clone https://github.com/lucaperrin/car_counter.git
-   cd car_counter/processing
+   git clone https://github.com/lucaperrin/car_tracker.git
+   cd car_tracker/processing
    ```
 
 ## Installation Steps
