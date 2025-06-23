@@ -1,0 +1,23 @@
+# Minimal requirements for local testing with ESP32 stream and video file
+#
+# Installation procedure (Ubuntu):
+# 1. (Recommended) Create and activate a virtual environment:
+#    python3 -m venv venv
+#    source venv/bin/activate
+# 2. Upgrade pip:
+#    pip install --upgrade pip
+# 3. Install all required packages:
+#    pip install -r requirements.txt
+#
+# If you encounter issues with torch or opencv, you may need to install system dependencies:
+#    sudo apt-get update
+#    sudo apt-get install python3-dev libgl1-mesa-glx libglib2.0-0
+#
+# Run your application as usual after installation.
+opencv-python==4.7.0.72
+numpy==1.24.3
+requests==2.31.0
+torch==2.0.1
+torchvision==0.15.2
+ultralytics==8.3.157
+imutils==0.5.4

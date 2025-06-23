@@ -1,0 +1,29 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+ENV/
+env/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Model files (if too large for GitHub, consider using Git LFS)
+*.pt
+*.pth
+
+# Video files (if too large for GitHub, consider using Git LFS)
+# demo-vids/
+# *.mp4
+# *.mov
+# *.avi
+
+# Output files
+vehicle_counts.txt
