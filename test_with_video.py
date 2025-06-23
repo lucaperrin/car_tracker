@@ -3,7 +3,7 @@ import time
 import numpy as np
 from detector import VehicleDetector
 from tracker import VehicleTracker
-from config import FRAME_WIDTH, FRAME_HEIGHT, PROCESS_EVERY_N_FRAMES
+from config import FRAME_WIDTH, FRAME_HEIGHT, PROCESS_EVERY_N_FRAMES, DEMO_VIDEO_PATH
 
 def test_with_video(video_path):
     """Test the car counting system with a video file"""
@@ -75,9 +75,7 @@ def test_with_video(video_path):
         print(f"Final count: {tracker.left_to_right_count} cars moving left to right")
 
 if __name__ == "__main__":
-    # Replace with your video file path
-    video_path = "demo-vids/demo6.mp4"
-    
+    # Use DEMO_VIDEO_PATH from config.py
+    video_path = DEMO_VIDEO_PATH
     print("** RUNNING DEMO VIDEO MODE **")
-
     test_with_video(video_path)

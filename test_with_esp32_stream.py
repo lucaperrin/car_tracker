@@ -4,17 +4,14 @@ import numpy as np
 import time
 from detector import VehicleDetector
 from tracker import VehicleTracker
-from config import FRAME_WIDTH, FRAME_HEIGHT, PROCESS_EVERY_N_FRAMES
-
-# Replace with your ESP32-CAM stream URL
-ESP32_STREAM_URL = "http://192.168.1.200/mjpeg/stream"
+from config import FRAME_WIDTH, FRAME_HEIGHT, PROCESS_EVERY_N_FRAMES, CAMERA_URL
 
 def test_with_esp32_stream():
     detector = VehicleDetector()
     tracker = VehicleTracker()
     tracker.set_counting_line(FRAME_WIDTH)
 
-    stream = requests.get(ESP32_STREAM_URL, stream=True)
+    stream = requests.get(CAMERA_URL, stream=True)
     bytes_data = b''
     frame_count = 0
 

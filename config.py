@@ -5,7 +5,7 @@ VIDEO_SOURCE = "ip_camera"  # Options: "ip_camera" or "demo_video"
 
 # IP Camera settings
 
-CAMERA_URL = "http://192.168.1.199"  # Replace with your IP camera URL
+CAMERA_URL = "http://192.168.1.200/mjpeg/stream"  # Replace with your IP camera URL
 CAMERA_USERNAME = ""  # If authentication is required
 CAMERA_PASSWORD = ""  # If authentication is required
 

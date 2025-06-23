@@ -1,14 +1,12 @@
 import cv2
 import requests
 import numpy as np
-
-# Replace with your ESP32-CAM stream URL (usually ends with /stream)
-ESP32_STREAM_URL = "http://192.168.1.200/mjpeg/stream"
+from config import CAMERA_URL
 
 def main():
-    stream = requests.get(ESP32_STREAM_URL, stream=True)
+    stream = requests.get(CAMERA_URL, stream=True)
     bytes_data = b''
-    print(f"Connecting to ESP32-CAM stream at {ESP32_STREAM_URL} ...")
+    print(f"Connecting to ESP32-CAM stream at {CAMERA_URL} ...")
     for chunk in stream.iter_content(chunk_size=1024):
         bytes_data += chunk
         a = bytes_data.find(b'\xff\xd8')
