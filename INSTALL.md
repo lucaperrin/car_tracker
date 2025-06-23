@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Python 3.8 or higher
+- Python 3.8 or higher BUT NO 3.12
 - Pip package manager
 - ESP32-CAM or video file for testing
 
