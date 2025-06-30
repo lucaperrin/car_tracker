@@ -272,11 +272,15 @@ class VehicleTracker:
         # Get current and previous positions
         current = self.objects[object_id]
         previous = self.previous_positions[object_id]
-        
+
         # Get class name
         class_id = self.classes[object_id]
         class_name = self._get_class_name(class_id)
-        
+
+        # Only count if the object moved enough horizontally (not parked)
+        if abs(current[0] - previous[0]) < self.direction_threshold:
+            return  # Ignore objects that haven't moved enough
+
         # Check if the object crossed the line
         if (previous[0] < self.counting_line_x and current[0] >= self.counting_line_x):
             # Object moved right
@@ -306,62 +310,19 @@ class VehicleTracker:
         return class_map.get(class_id, str(class_id))
     
     def draw_tracking(self, frame):
-        """Draw tracking information on the frame"""
+        """Draw only the counting line, green box, ID, and confidence for each object."""
         # Draw counting line (vertical line)
         if self.counting_line_x is not None:
             cv2.line(frame, (self.counting_line_x, 0), (self.counting_line_x, frame.shape[0]), (0, 255, 255), 4)  # Yellow line, thicker
-        
-        # Draw object IDs, directions, and classes
         for object_id, centroid in self.objects.items():
-            # Get class name
             class_id = self.classes.get(object_id)
-            class_name = self._get_class_name(class_id)
-            
-            # Draw the centroid and ID
-            text = f"ID {object_id} ({class_name})"
-            # Generate a unique color for this object ID
-            color = ((object_id * 50) % 255, (object_id * 100) % 255, (object_id * 150) % 255)
-            if color[0] + color[1] + color[2] < 150:  # If color is too dark
-                color = (200, 200, 0)  # Use a bright color instead
-                
-            cv2.putText(frame, text, (centroid[0] - 10, centroid[1] - 10),
+            prev_centroid = self.previous_positions.get(object_id, centroid)
+            dx = abs(centroid[0] - prev_centroid[0])
+            # Only show ID if movement is above threshold
+            if dx >= self.direction_threshold:
+                text = f"ID {object_id}"
+                color = (0, 255, 0)  # Green for ID text
+                cv2.putText(frame, text, (centroid[0] - 10, centroid[1] - 10),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-            
-            # Draw direction arrow
-            direction = self.directions[object_id]
-            if direction is not None:
-                arrow_length = 20
-                # Convert direction string to numeric value
-                direction_value = 1 if direction == 'right' else -1
-                end_x = centroid[0] + (arrow_length * direction_value)
-                cv2.arrowedLine(frame, (centroid[0], centroid[1]), (end_x, centroid[1]),
-                                color, 2, tipLength=0.3)
-        
-        # Draw the counts
-        y_pos = 30
-        cv2.putText(frame, f"Left to Right: {self.left_to_right_count}", (10, y_pos), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
-        y_pos += 30
-        cv2.putText(frame, f"Right to Left: {self.right_to_left_count}", (10, y_pos), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
-        
-        # Draw counts by class
-        y_pos += 40
-        cv2.putText(frame, "Left to Right by class:", (10, y_pos), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-        for class_name, count in self.left_to_right_by_class.items():
-            if count > 0:
-                y_pos += 25
-                cv2.putText(frame, f"{class_name}: {count}", (20, y_pos), 
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-        
-        y_pos += 40
-        cv2.putText(frame, "Right to Left by class:", (10, y_pos), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-        for class_name, count in self.right_to_left_by_class.items():
-            if count > 0:
-                y_pos += 25
-                cv2.putText(frame, f"{class_name}: {count}", (20, y_pos), 
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-        
+            # The green box and confidence are drawn in detector.draw_detections
         return frame

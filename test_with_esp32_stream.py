@@ -19,6 +19,9 @@ def test_with_esp32_stream():
     cv2.resizeWindow('ESP32-CAM Car Counter', FRAME_WIDTH, FRAME_HEIGHT)
     print("Press 'q' to quit")
 
+    start_wall_time = time.time()
+    start_virtual_time = None
+
     try:
         for chunk in stream.iter_content(chunk_size=1024):
             bytes_data += chunk
@@ -33,12 +36,19 @@ def test_with_esp32_stream():
                 frame = cv2.flip(frame, -1)  # Flip vertically and horizontally
                 frame = cv2.resize(frame, (FRAME_WIDTH, FRAME_HEIGHT))
                 frame_count += 1
+                # Virtual time: assume 30 FPS stream, so each frame is ~0.033s
+                video_time = frame_count * (1/30)
+                if start_virtual_time is None:
+                    start_virtual_time = video_time
                 if frame_count % PROCESS_EVERY_N_FRAMES == 0:
                     detections = detector.detect(frame)
                     tracker.update(detections)
                     frame = detector.draw_detections(frame, detections)
                     frame = tracker.draw_tracking(frame)
                 cv2.imshow('ESP32-CAM Car Counter', frame)
+                wall_elapsed = time.time() - start_wall_time
+                video_elapsed = video_time - start_virtual_time if start_virtual_time is not None else 0
+                print(f"Wall: {wall_elapsed:.2f}s | Stream (virtual): {video_elapsed:.2f}s | Delay: {wall_elapsed - video_elapsed:.2f}s")
                 key = cv2.waitKey(1) & 0xFF
                 if key == ord('q'):
                     print("Quit by user")

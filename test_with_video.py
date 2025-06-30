@@ -1,6 +1,7 @@
 import cv2
 import time
 import numpy as np
+import psutil  # Added for CPU usage
 from detector import VehicleDetector
 from tracker import VehicleTracker
 from config import FRAME_WIDTH, FRAME_HEIGHT, PROCESS_EVERY_N_FRAMES, DEMO_VIDEO_PATH
@@ -28,7 +29,8 @@ def test_with_video(video_path):
     cv2.resizeWindow('Car Counter Test', FRAME_WIDTH, FRAME_HEIGHT)
     
     print("Press 'q' to quit")
-    
+    start_wall_time = time.time()  # Real clock
+    start_virtual_time = None      # Video clock
     try:
         while True:
             # Read a frame
@@ -36,6 +38,11 @@ def test_with_video(video_path):
             if not ret:
                 print("End of video")
                 break
+            
+            # Get video timestamp (if available)
+            video_time = cap.get(cv2.CAP_PROP_POS_MSEC) / 1000.0  # seconds
+            if start_virtual_time is None:
+                start_virtual_time = video_time
             
             # Resize frame
             frame = cv2.resize(frame, (FRAME_WIDTH, FRAME_HEIGHT))
@@ -55,6 +62,11 @@ def test_with_video(video_path):
             
             # Display the frame
             cv2.imshow('Car Counter Test', frame)
+            
+            # Print CPU usage and time info
+            wall_elapsed = time.time() - start_wall_time
+            video_elapsed = video_time - start_virtual_time if start_virtual_time is not None else 0
+            print(f"CPU usage: {psutil.cpu_percent(interval=None)}% | Wall: {wall_elapsed:.2f}s | Video: {video_elapsed:.2f}s | Delay: {wall_elapsed - video_elapsed:.2f}s")
             
             # Check for key press
             key = cv2.waitKey(1) & 0xFF
