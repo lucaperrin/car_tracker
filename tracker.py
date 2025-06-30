@@ -3,6 +3,8 @@ import cv2
 from scipy.spatial import distance
 from collections import OrderedDict
 from config import MAX_DISAPPEARED, MAX_DISTANCE, DIRECTION_THRESHOLD
+import os
+import time
 
 class VehicleTracker:
     def __init__(self):
@@ -150,7 +152,7 @@ class VehicleTracker:
         if hasattr(self, 'vertical_zone'):
             self.vertical_zone = None
     
-    def update(self, detections):
+    def update(self, detections, frame=None):
         """Update the tracked objects with new detections"""
         # Increment frame counter
         self.frame_count += 1
@@ -158,6 +160,11 @@ class VehicleTracker:
         # Extract centroids and classes from detections
         centroids = np.array([d['centroid'] for d in detections]) if detections else np.empty((0, 2))
         classes = [d['class'] for d in detections] if detections else []
+
+        # Map object_id to detection for saving crops
+        detection_map = {}
+        for d in detections:
+            detection_map[d['centroid']] = d
 
         # If no tracked objects and no detections, do nothing
         if len(self.objects) == 0 and len(centroids) == 0:
@@ -224,8 +231,13 @@ class VehicleTracker:
                 # Update direction
                 self._update_direction(object_id)
                 
-                # Check if object crossed the counting line
-                self._check_counting_line(object_id)
+                # Check if object crossed the counting line, pass detection
+                detection = None
+                for d in detections:
+                    if np.allclose(d['centroid'], centroids[col]):
+                        detection = d
+                        break
+                self._check_counting_line(object_id, frame, detection)
                 
                 # Mark the row and column as used
                 used_rows.add(row)
@@ -267,7 +279,7 @@ class VehicleTracker:
         elif dx < 0:
             self.directions[object_id] = 'left'
     
-    def _check_counting_line(self, object_id):
+    def _check_counting_line(self, object_id, frame=None, detection=None):
         """Check if an object has crossed the counting line and update counts"""
         # Get current and previous positions
         current = self.objects[object_id]
@@ -283,19 +295,31 @@ class VehicleTracker:
 
         # Check if the object crossed the line
         if (previous[0] < self.counting_line_x and current[0] >= self.counting_line_x):
-            # Object moved right
             if self.directions[object_id] == 'right':
                 self.left_to_right_count += 1
                 self.left_to_right_by_class[class_name] += 1
                 print(f"Counted {class_name} moving right. Total: {self.left_to_right_by_class[class_name]}")
-                self.save_counts_to_file()  # Save counts after each update
+                self.save_counts_to_file()
+                # Save cropped image
+                if frame is not None and detection is not None:
+                    x1, y1, x2, y2 = detection['bbox']
+                    crop = frame[y1:y2, x1:x2]
+                    os.makedirs('crossings', exist_ok=True)
+                    filename = f"crossings/{class_name}_right_{object_id}_{int(time.time())}.jpg"
+                    cv2.imwrite(filename, crop)
         elif (previous[0] > self.counting_line_x and current[0] <= self.counting_line_x):
-            # Object moved left
             if self.directions[object_id] == 'left':
                 self.right_to_left_count += 1
                 self.right_to_left_by_class[class_name] += 1
                 print(f"Counted {class_name} moving left. Total: {self.right_to_left_by_class[class_name]}")
-                self.save_counts_to_file()  # Save counts after each update
+                self.save_counts_to_file()
+                # Save cropped image
+                if frame is not None and detection is not None:
+                    x1, y1, x2, y2 = detection['bbox']
+                    crop = frame[y1:y2, x1:x2]
+                    os.makedirs('crossings', exist_ok=True)
+                    filename = f"crossings/{class_name}_left_{object_id}_{int(time.time())}.jpg"
+                    cv2.imwrite(filename, crop)
     
     def _get_class_name(self, class_id):
         """Convert class ID to name"""

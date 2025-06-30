@@ -25,7 +25,7 @@ CLASSES_TO_DETECT = [2, 3, 5, 7, 1]  # Class IDs for vehicles (car, motorcycle, 
 # Tracking settings
 MAX_DISAPPEARED = 15  # Maximum number of frames an object can disappear
 MAX_DISTANCE = 150  # Maximum distance between centroids to consider it the same object
-DIRECTION_THRESHOLD = 20  # Minimum horizontal movement to determine direction
+DIRECTION_THRESHOLD = 40  # Minimum horizontal movement to determine direction
 
 # Web interface settings
 WEB_PORT = 5000  # Port for the web interface
